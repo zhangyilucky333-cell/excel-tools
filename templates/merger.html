@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 合并工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .nav-link, .help-btn {
+            color: #11998e;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border: 2px solid #11998e;
+            border-radius: 6px;
+            transition: all 0.3s;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .nav-link:hover, .help-btn:hover {
+            background: #11998e;
+            color: white;
+        }
+
+        .help-panel {
+            background: #f0fff4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #11998e;
+        }
+
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .help-header h3 {
+            color: #11998e;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #f56565;
+        }
+
+        .help-content {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .help-section {
+            margin-bottom: 20px;
+        }
+
+        .help-section h4 {
+            color: #11998e;
+            margin-bottom: 10px;
+        }
+
+        .help-section ul, .help-section ol {
+            margin-left: 20px;
+        }
+
+        .help-section li {
+            margin-bottom: 5px;
+        }
+
+        .help-section p {
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #11998e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: #11998e;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #11998e;
+            background: #f0fff4;
+        }
+
+        .upload-area.dragover {
+            border-color: #11998e;
+            background: #e6fffa;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #11998e;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-list {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #11998e;
+        }
+
+        .file-item-info {
+            flex: 1;
+        }
+
+        .file-item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .file-item-sheets {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .remove-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: #f56565;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #11998e;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #0d7a6f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .message-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #48bb78;
+        }
+
+        .message-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #f56565;
+        }
+
+        .message-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #4299e1;
+        }
+
+        .preview-box {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .preview-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #11998e;
+        }
+
+        .preview-item-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .preview-item-details {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #11998e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #11998e;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .warning-box {
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning-title {
+            font-weight: 600;
+            color: #d68910;
+            margin-bottom: 8px;
+        }
+
+        .warning-text {
+            color: #7d6608;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Excel 合并工具</h1>
+            <div>
+                <a href="/" class="nav-link">切换到拆分</a>
+                <button class="help-btn" onclick="toggleHelp()">❓ 使用说明</button>
+            </div>
+        </div>
+        <p class="subtitle">合并多个Excel文件，相同名称的Sheet自动合并</p>
+
+        <!-- 帮助面板 -->
+        <div id="helpPanel" class="help-panel hidden">
+            <div class="help-header">
+                <h3>📖 使用说明</h3>
+                <button onclick="toggleHelp()" class="close-btn">✕</button>
+            </div>
+            <div class="help-content">
+                <div class="help-section">
+                    <h4>🎯 功能说明</h4>
+                    <p>将多个月份/批次的Excel文件合并成一个完整的文件，相同名称的Sheet会自动合并。</p>
+                </div>
+                <div class="help-section">
+                    <h4>📝 操作步骤</h4>
+                    <ol>
+                        <li>上传多个 Excel 文件（至少2个）</li>
+                        <li>查看文件列表，可移除不需要的文件</li>
+                        <li>点击"预览合并结果"查看详情</li>
+                        <li>确认无误后点击"开始合并"</li>
+                        <li>下载合并后的文件</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h4>💡 使用示例</h4>
+                    <p><strong>输入文件：</strong></p>
+                    <ul>
+                        <li>1月采购数据.xlsx（Asheet、Bsheet、Csheet）</li>
+                        <li>2月采购数据.xlsx（Asheet、Bsheet）</li>
+                        <li>3月采购数据.xlsx（Asheet、Bsheet、Csheet）</li>
+                    </ul>
+                    <p><strong>输出结果：</strong>合并结果.xlsx</p>
+                    <ul>
+                        <li>Asheet：1月+2月+3月的数据</li>
+                        <li>Bsheet：1月+2月+3月的数据</li>
+                        <li>Csheet：1月+3月的数据</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4>⚠️ 注意事项</h4>
+                    <ul>
+                        <li>标题行不会重复（只保留第一个文件的标题）</li>
+                        <li>相同名称的Sheet会自动合并</li>
+                        <li>如果列结构不同，系统会自动对齐</li>
+                        <li>建议确保待合并文件的列结构相同</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="messageBox"></div>
+
+        <!-- 步骤1: 上传多个文件 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">1</span>
+                上传Excel文件（可多选）
+            </div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📚</div>
+                <div class="upload-text">点击选择多个文件或拖拽文件到此处</div>
+                <div class="upload-hint">支持 .xlsx 和 .xls 格式，至少选择2个文件</div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls" multiple>
+            </div>
+
+            <!-- 文件列表 -->
+            <div id="fileListBox" class="hidden">
+                <div class="file-list" id="fileList"></div>
+                <div class="warning-box">
+                    <div class="warning-title">⚠️ 注意事项</div>
+                    <div class="warning-text">
+                        • 相同名称的Sheet将会合并到一起<br>
+                        • 标题行（第一行）不会重复，后续文件的标题行会被自动去除<br>
+                        • 如果Sheet的列结构不同，系统会尝试对齐列
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤2: 预览合并 -->
+        <div id="step2" class="step hidden">
+            <div class="step-title">
+                <span class="step-number">2</span>
+                预览合并结果
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="previewBtn">
+                    预览合并结果
+                </button>
+            </div>
+        </div>
+
+        <!-- 步骤3: 预览详情 -->
+        <div id="step3" class="step hidden">
+            <div class="step-title">
+                <span class="step-number">3</span>
+                确认与执行
+            </div>
+            <div id="previewBox"></div>
+            <div class="btn-group">
+                <button class="btn btn-success" id="mergeBtn">
+                    开始合并
+                </button>
+            </div>
+        </div>
+
+        <!-- 步骤4: 下载结果 -->
+        <div id="step4" class="step hidden">
+            <div class="step-title">
+                <span class="step-number">4</span>
+                下载结果
+            </div>
+            <div id="resultBox"></div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const messageBox = document.getElementById('messageBox');
+        const fileListBox = document.getElementById('fileListBox');
+        const fileList = document.getElementById('fileList');
+        const previewBtn = document.getElementById('previewBtn');
+        const mergeBtn = document.getElementById('mergeBtn');
+
+        // 切换帮助面板
+        function toggleHelp() {
+            const helpPanel = document.getElementById('helpPanel');
+            helpPanel.classList.toggle('hidden');
+        }
+
+        // 上传区域点击事件
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        });
+
+        // 预览按钮
+        previewBtn.addEventListener('click', previewMerge);
+
+        // 合并按钮
+        mergeBtn.addEventListener('click', executeMerge);
+
+        // 处理文件上传
+        async function handleFiles(files) {
+            if (files.length < 2) {
+                showMessage('请至少选择2个文件进行合并', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files[]', file);
+            }
+
+            showMessage('正在上传文件...', 'info');
+
+            try {
+                const response = await fetch('/upload-multiple', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    uploadedFiles = data.files;
+                    showFileList(data.files);
+                    showMessage(`成功上传 ${data.total_files} 个文件！`, 'success');
+                    document.getElementById('step2').classList.remove('hidden');
+                } else {
+                    showMessage('错误: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('上传失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示文件列表
+        function showFileList(files) {
+            fileList.innerHTML = '';
+            
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-item-info">
+                        <div class="file-item-name">📄 ${file.original_name}</div>
+                        <div class="file-item-sheets">包含 ${file.sheets.length} 个Sheet: ${file.sheets.join(', ')}</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFile(${index})">移除</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+
+            fileListBox.classList.remove('hidden');
+        }
+
+        // 移除文件
+        window.removeFile = function(index) {
+            uploadedFiles.splice(index, 1);
+            
+            if (uploadedFiles.length < 2) {
+                fileListBox.classList.add('hidden');
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('step3').classList.add('hidden');
+                showMessage('至少需要2个文件进行合并', 'error');
+            } else {
+                showFileList(uploadedFiles);
+            }
+        };
+
+        // 预览合并
+        async function previewMerge() {
+            if (uploadedFiles.length < 2) {
+                showMessage('至少需要2个文件进行合并', 'error');
+                return;
+            }
+
+            previewBtn.disabled = true;
+            previewBtn.innerHTML = '正在预览...<span class="loading"></span>';
+
+            try {
+                const response = await fetch('/preview-merge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: uploadedFiles
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showPreview(data);
+                    document.getElementById('step3').classList.remove('hidden');
+                    showMessage(`预览成功！将生成 ${data.total_sheets} 个Sheet`, 'success');
+                } else {
+                    showMessage('预览失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('预览失败: ' + error.message, 'error');
+            } finally {
+                previewBtn.disabled = false;
+                previewBtn.textContent = '预览合并结果';
+            }
+        }
+
+        // 显示预览
+        function showPreview(data) {
+            const previewBox = document.getElementById('previewBox');
+            
+            let totalRows = 0;
+            data.preview.forEach(item => totalRows += item.total_rows);
+            
+            let html = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">${data.total_sheets}</div>
+                        <div class="stat-label">合并后Sheet数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${totalRows}</div>
+                        <div class="stat-label">总数据行数</div>
+                    </div>
+                </div>
+                <div class="preview-title">📋 合并详情：</div>
+            `;
+
+            data.preview.forEach(item => {
+                const fileDetails = item.files
+                    .map(f => `${f.name.split('_').slice(2).join('_')}: ${f.rows}行`)
+                    .join('<br>          ');
+                
+                html += `
+                    <div class="preview-item">
+                        <div class="preview-item-header">📑 Sheet: ${item.sheet_name}</div>
+                        <div class="preview-item-details">
+                            来源: ${item.file_count} 个文件<br>
+                            合并后总行数: ${item.total_rows} 行<br>
+                            明细: ${fileDetails}
+                        </div>
+                    </div>
+                `;
+            });
+
+            previewBox.innerHTML = html;
+        }
+
+        // 执行合并
+        async function executeMerge() {
+            mergeBtn.disabled = true;
+            mergeBtn.innerHTML = '正在合并...<span class="loading"></span>';
+
+            try {
+                const response = await fetch('/merge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: uploadedFiles
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(data);
+                    document.getElementById('step4').classList.remove('hidden');
+                    showMessage(`合并成功！已生成 ${data.sheet_count} 个Sheet`, 'success');
+                } else {
+                    showMessage('合并失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('合并失败: ' + error.message, 'error');
+            } finally {
+                mergeBtn.disabled = false;
+                mergeBtn.textContent = '开始合并';
+            }
+        }
+
+        // 显示结果
+        function showResult(data) {
+            const resultBox = document.getElementById('resultBox');
+            
+            let statsHtml = '';
+            for (const [sheet, rows] of Object.entries(data.stats)) {
+                statsHtml += `<div style="margin-bottom: 5px;">• ${sheet}: ${rows} 行</div>`;
+            }
+            
+            let html = `
+                <div class="preview-box">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">✅</div>
+                            <div class="stat-label">合并完成</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${data.sheet_count}</div>
+                            <div class="stat-label">Sheet数量</div>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="${data.download_url}" class="btn btn-success" download>
+                            💾 下载合并文件
+                        </a>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            🔄 合并新文件
+                        </button>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div class="preview-title">Sheet统计：</div>
+                        <div style="color: #666; font-size: 14px; line-height: 1.8;">
+                            ${statsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultBox.innerHTML = html;
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            messageBox.innerHTML = `<div class="message message-${type}">${text}</div>`;
+            setTimeout(() => {
+                if (type !== 'error') {
+                    messageBox.innerHTML = '';
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

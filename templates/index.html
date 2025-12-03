@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 拆分工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .nav-link, .help-btn {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            transition: all 0.3s;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .nav-link:hover, .help-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .help-panel {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .help-header h3 {
+            color: #667eea;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: #fc8181;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #f56565;
+        }
+
+        .help-content {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .help-section {
+            margin-bottom: 20px;
+        }
+
+        .help-section h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .help-section ul, .help-section ol {
+            margin-left: 20px;
+        }
+
+        .help-section li {
+            margin-bottom: 5px;
+        }
+
+        .help-section p {
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e8ebff;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .message-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #48bb78;
+        }
+
+        .message-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #f56565;
+        }
+
+        .message-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #4299e1;
+        }
+
+        .preview-box {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .preview-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .preview-item-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .preview-item-details {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .file-info {
+            background: #e8ebff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .file-info-item {
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .file-info-item strong {
+            color: #667eea;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Excel 拆分工具</h1>
+            <div>
+                <a href="/merger" class="nav-link">切换到合并</a>
+                <button class="help-btn" onclick="toggleHelp()">❓ 使用说明</button>
+            </div>
+        </div>
+        <p class="subtitle">按指定列拆分Excel文件，支持多Sheet处理</p>
+
+        <!-- 帮助面板 -->
+        <div id="helpPanel" class="help-panel hidden">
+            <div class="help-header">
+                <h3>📖 使用说明</h3>
+                <button onclick="toggleHelp()" class="close-btn">✕</button>
+            </div>
+            <div class="help-content">
+                <div class="help-section">
+                    <h4>🎯 功能说明</h4>
+                    <p>将一个包含多个组别/部门的Excel文件，按指定列拆分成多个独立文件。</p>
+                </div>
+                <div class="help-section">
+                    <h4>📝 操作步骤</h4>
+                    <ol>
+                        <li>上传您的 Excel 文件（支持 .xlsx 和 .xls 格式）</li>
+                        <li>选择用于拆分的列（如"商务组别"、"部门"等）</li>
+                        <li>点击"预览拆分结果"查看详情</li>
+                        <li>确认无误后点击"开始拆分"</li>
+                        <li>下载生成的 ZIP 压缩包</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h4>💡 使用示例</h4>
+                    <p><strong>输入文件：</strong>部门采购数据.xlsx</p>
+                    <p><strong>包含Sheet：</strong>1-TPP、2-EPO、3-EPO外部</p>
+                    <p><strong>拆分列：</strong>商务组别</p>
+                    <p><strong>输出结果：</strong></p>
+                    <ul>
+                        <li>A商务组别.xlsx（所有Sheet，仅A组数据）</li>
+                        <li>B商务组别.xlsx（所有Sheet，仅B组数据）</li>
+                        <li>C商务组别.xlsx（所有Sheet，仅C组数据）</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4>⚠️ 注意事项</h4>
+                    <ul>
+                        <li>每个Sheet会独立拆分，保持数据一致性</li>
+                        <li>拆分后的文件会尽量保留原始格式</li>
+                        <li>确保拆分列在所有Sheet中存在</li>
+                        <li>文件大小限制：50MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="messageBox"></div>
+
+        <!-- 步骤1: 上传文件 -->
+        <div class="step">
+            <div class="step-title">
+                <span class="step-number">1</span>
+                上传Excel文件
+            </div>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击选择文件或拖拽文件到此处</div>
+                <div class="upload-hint">支持 .xlsx 和 .xls 格式，最大50MB</div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls">
+            </div>
+        </div>
+
+        <!-- 文件信息 -->
+        <div id="fileInfoBox" class="hidden"></div>
+
+        <!-- 步骤2: 选择拆分列 -->
+        <div id="step2" class="step hidden">
+            <div class="step-title">
+                <span class="step-number">2</span>
+                选择拆分列
+            </div>
+            <div class="form-group">
+                <label for="splitColumn">按哪一列拆分？</label>
+                <select id="splitColumn">
+                    <option value="">请选择...</option>
+                </select>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="previewBtn" disabled>
+                    预览拆分结果
+                </button>
+            </div>
+        </div>
+
+        <!-- 步骤3: 预览结果 -->
+        <div id="step3" class="step hidden">
+            <div class="step-title">
+                <span class="step-number">3</span>
+                预览与确认
+            </div>
+            <div id="previewBox"></div>
+            <div class="btn-group">
+                <button class="btn btn-success" id="splitBtn">
+                    开始拆分
+                </button>
+            </div>
+        </div>
+
+        <!-- 步骤4: 下载结果 -->
+        <div id="step4" class="step hidden">
+            <div class="step-title">
+                <span class="step-number">4</span>
+                下载结果
+            </div>
+            <div id="resultBox"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilename = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const messageBox = document.getElementById('messageBox');
+        const fileInfoBox = document.getElementById('fileInfoBox');
+        const splitColumn = document.getElementById('splitColumn');
+        const previewBtn = document.getElementById('previewBtn');
+        const splitBtn = document.getElementById('splitBtn');
+
+        // 切换帮助面板
+        function toggleHelp() {
+            const helpPanel = document.getElementById('helpPanel');
+            helpPanel.classList.toggle('hidden');
+        }
+
+        // 上传区域点击事件
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // 拆分列选择
+        splitColumn.addEventListener('change', () => {
+            previewBtn.disabled = !splitColumn.value;
+        });
+
+        // 预览按钮
+        previewBtn.addEventListener('click', previewSplit);
+
+        // 拆分按钮
+        splitBtn.addEventListener('click', executeSplit);
+
+        // 处理文件上传
+        async function handleFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showMessage('正在上传文件...', 'info');
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentFilename = data.filename;
+                    showFileInfo(file.name, data.sheets, data.columns);
+                    populateColumns(data.columns);
+                    showMessage('文件上传成功！', 'success');
+                    document.getElementById('step2').classList.remove('hidden');
+                } else {
+                    showMessage('错误: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('上传失败: ' + error.message, 'error');
+            }
+        }
+
+        // 显示文件信息
+        function showFileInfo(filename, sheets, columns) {
+            fileInfoBox.innerHTML = `
+                <div class="file-info">
+                    <div class="file-info-item"><strong>文件名:</strong> ${filename}</div>
+                    <div class="file-info-item"><strong>Sheet数量:</strong> ${sheets.length} (${sheets.join(', ')})</div>
+                    <div class="file-info-item"><strong>可用列:</strong> ${columns.length} 列</div>
+                </div>
+            `;
+            fileInfoBox.classList.remove('hidden');
+        }
+
+        // 填充列选择框
+        function populateColumns(columns) {
+            splitColumn.innerHTML = '<option value="">请选择...</option>';
+            columns.forEach(col => {
+                const option = document.createElement('option');
+                option.value = col;
+                option.textContent = col;
+                splitColumn.appendChild(option);
+            });
+        }
+
+        // 预览拆分
+        async function previewSplit() {
+            const column = splitColumn.value;
+            if (!column) return;
+
+            previewBtn.disabled = true;
+            previewBtn.innerHTML = '正在预览...<span class="loading"></span>';
+
+            try {
+                const response = await fetch('/preview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: currentFilename,
+                        split_column: column
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showPreview(data);
+                    document.getElementById('step3').classList.remove('hidden');
+                    showMessage(`预览成功！将生成 ${data.total_files} 个文件`, 'success');
+                } else {
+                    showMessage('预览失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('预览失败: ' + error.message, 'error');
+            } finally {
+                previewBtn.disabled = false;
+                previewBtn.textContent = '预览拆分结果';
+            }
+        }
+
+        // 显示预览
+        function showPreview(data) {
+            const previewBox = document.getElementById('previewBox');
+            
+            let html = `
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">${data.total_files}</div>
+                        <div class="stat-label">将生成文件</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${data.sheet_names.length}</div>
+                        <div class="stat-label">每个文件包含Sheet</div>
+                    </div>
+                </div>
+                <div class="preview-title">📋 拆分详情：</div>
+            `;
+
+            data.preview.forEach(item => {
+                const sheetDetails = Object.entries(item.sheets)
+                    .map(([sheet, count]) => `${sheet}: ${count}行`)
+                    .join(' | ');
+                
+                html += `
+                    <div class="preview-item">
+                        <div class="preview-item-header">📄 ${item.value}.xlsx</div>
+                        <div class="preview-item-details">
+                            总计 ${item.total_rows} 行数据 - ${sheetDetails}
+                        </div>
+                    </div>
+                `;
+            });
+
+            previewBox.innerHTML = html;
+        }
+
+        // 执行拆分
+        async function executeSplit() {
+            splitBtn.disabled = true;
+            splitBtn.innerHTML = '正在拆分...<span class="loading"></span>';
+
+            try {
+                const response = await fetch('/split', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: currentFilename,
+                        split_column: splitColumn.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(data);
+                    document.getElementById('step4').classList.remove('hidden');
+                    showMessage(`拆分成功！已生成 ${data.file_count} 个文件`, 'success');
+                } else {
+                    showMessage('拆分失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('拆分失败: ' + error.message, 'error');
+            } finally {
+                splitBtn.disabled = false;
+                splitBtn.textContent = '开始拆分';
+            }
+        }
+
+        // 显示结果
+        function showResult(data) {
+            const resultBox = document.getElementById('resultBox');
+            
+            let html = `
+                <div class="preview-box">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">✅</div>
+                            <div class="stat-label">拆分完成</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">${data.file_count}</div>
+                            <div class="stat-label">文件已生成</div>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="${data.download_url}" class="btn btn-success" download>
+                            💾 下载所有文件 (ZIP)
+                        </a>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            🔄 处理新文件
+                        </button>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div class="preview-title">包含的文件：</div>
+                        <div style="color: #666; font-size: 14px; line-height: 1.8;">
+                            ${data.files.map(f => `📄 ${f}.xlsx`).join('<br>')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            resultBox.innerHTML = html;
+        }
+
+        // 显示消息
+        function showMessage(text, type) {
+            messageBox.innerHTML = `<div class="message message-${type}">${text}</div>`;
+            setTimeout(() => {
+                if (type !== 'error') {
+                    messageBox.innerHTML = '';
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

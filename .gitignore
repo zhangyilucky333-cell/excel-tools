@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# 临时文件和输出
+uploads/*.xlsx
+uploads/*.xls
+outputs/*.xlsx
+outputs/*.zip
+!uploads/.gitkeep
+!outputs/.gitkeep
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 打包文件
+*.zip
+Excel拆分合并工具/
+Excel拆分合并工具_*.zip
